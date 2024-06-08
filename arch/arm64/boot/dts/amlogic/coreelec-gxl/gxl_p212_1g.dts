@@ -1,0 +1,31 @@
+#include "../gxl_p212_1g_buildroot.dts"
+#include "coreelec_gxl.dtsi"
+
+/{
+	coreelec-dt-id = "gxl_p212_1g";
+
+	ion_dev {
+		memory-region = <&ion_reserved>;
+	};
+
+	reserved-memory {
+		ion_reserved:linux,ion-dev {
+			compatible = "shared-dma-pool";
+			reusable;
+			size = <0x0 0x4C00000>;
+			alignment = <0x0 0x400000>;
+		};
+
+		logo_reserved:linux,meson-fb {
+			/delete-property/ alloc-ranges;
+		};
+
+		codec_mm_cma:linux,codec_mm_cma {
+			size = <0x0 0xd000000>;
+		};
+	};
+
+	meson-fb {
+		logo_addr = "0x3fc00000";
+	};
+};
