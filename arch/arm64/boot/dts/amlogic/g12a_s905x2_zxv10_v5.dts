@@ -1,5 +1,5 @@
 /*
- * arch/arm64/boot/dts/amlogic/g12a_s905x2_u212_drm_buildroot.dts
+ * arch/arm64/boot/dts/amlogic/g12a_s905x2_u212_buildroot.dts
  *
  * Copyright (C) 2017 Amlogic, Inc. All rights reserved.
  *
@@ -22,7 +22,6 @@
 
 / {
 	model = "ZTE ZXV10 v5";
-	amlogic-dt-id = "g12a_s905x2_u212_2g";
 	compatible = "amlogic, g12a";
 	interrupt-parent = <&gic>;
 	#address-cells = <2>;
@@ -45,7 +44,7 @@
 
 	memory@00000000 {
 		device_type = "memory";
-		linux,usable-memory = <0x0 0x100000 0x0 0x7ff00000>;
+		linux,usable-memory = <0x0 0x0 0x0 0x80000000>;
 	};
 
 	reserved-memory {
@@ -54,6 +53,7 @@
 		ranges;
 		/* global autoconfigured region for contiguous allocations */
 		secmon_reserved:linux,secmon {
+			status = "disabled";
 			compatible = "shared-dma-pool";
 			reusable;
 			size = <0x0 0x400000>;
@@ -78,7 +78,6 @@
 			reusable;
 			size = <0x0 0x8000000>;
 			alignment = <0x0 0x400000>;
-			no-kernel-map;
 		};
 		ion_fb_reserved:linux,ion-fb {
 			compatible = "amlogic, ion-fb-mem";
@@ -152,11 +151,9 @@
 			label="sys_red";
 			gpios=<&gpio GPIOX_6 GPIO_ACTIVE_LOW>;
 			default-state ="on";
-			retain-state-suspended;
-			linux,default-trigger="cpu0";
 		};
 
-        sys_green {
+        	sys_green {
 			label="sys_green";
 			gpios=<&gpio GPIOX_7 GPIO_ACTIVE_LOW>;
 		};
@@ -208,7 +205,7 @@
 		interrupt_pin = <&gpio_ao       GPIOAO_11       GPIO_ACTIVE_HIGH>;
 		irq_trigger_type = "GPIO_IRQ_LOW";
 		power_on_pin = <&gpio       GPIOA_15       GPIO_ACTIVE_HIGH>;
-        power_on_pin2 = <&gpio       GPIOA_14       GPIO_ACTIVE_HIGH>;
+        	power_on_pin2 = <&gpio       GPIOA_14       GPIO_ACTIVE_HIGH>;
 		dhd_static_buf;	//if use bcm wifi, config dhd_static_buf
 		pinctrl-names = "default";
 		pinctrl-0 = <&pwm_e_pins>;
@@ -228,10 +225,25 @@
 		};
 	};
 
+	picdec_cma_reserved:linux,picdec {
+		compatible = "shared-dma-pool";
+		reusable;
+		size = <0x0>;
+		alignment = <0x0>;
+		linux,contiguous-region;
+	};
+
 	codec_mm {
 		compatible = "amlogic, codec, mm";
 		memory-region = <&codec_mm_cma &codec_mm_reserved>;
 		dev_name = "codec_mm";
+		status = "okay";
+	};
+
+	picdec {
+		compatible = "amlogic, picdec";
+		memory-region = <&picdec_cma_reserved>;
+		dev_name = "picdec";
 		status = "okay";
 	};
 
@@ -526,7 +538,7 @@
 		compatible = "amlogic, meson-g12a";
 		/*memory-region = <&logo_reserved>;*/
 		dev_name = "meson-fb";
-		status = "disable";
+		status = "okay";
 		interrupts = <0 3 1
 			0 56 1
 			0 89 1>;
@@ -812,24 +824,6 @@
 	};
 
 }; /* end of / */
-
-&drm_vpu {
-	status = "okay";
-	logo_addr = "0x7f800000";
-};
-
-&drm_amhdmitx {
-	status = "okay";
-	hdcp = "okay";
-};
-
-&drm_amcvbsout {
-	status = "okay";
-};
-
-&drm_lcd {
-	status = "disable";
-};
 
 &pwm_AO_cd {
 		status = "okay";
@@ -1278,7 +1272,7 @@
 /*if you want to use vdin just modify status to "ok"*/
 &vdin0 {
 	/*memory-region = <&vdin0_cma_reserved>;*/
-	status = "okay";
+	status = "disabled";
 	/* up to 1920x1080 yuv422 8bit and 5 buffers
 	 * 1920x1080x2x5 = 20 M
 	 */
@@ -1294,7 +1288,7 @@
 };
 &vdin1 {
 	memory-region = <&vdin1_cma_reserved>;
-	status = "okay";
+	status = "disabled";
 	/*vdin write mem color depth support:
 	 *bit0:support 8bit
 	 *bit1:support 9bit
@@ -1324,7 +1318,7 @@
 };
 
 &sd_emmc_b1 {
-	status = "disabled";
+	status = "okay";
 	sd {
 		caps = "MMC_CAP_4_BIT_DATA",
 			 "MMC_CAP_MMC_HIGHSPEED",
@@ -1335,7 +1329,7 @@
 };
 
 &sd_emmc_b2 {
-	status = "disabled";
+	status = "okay";
 	sd {
 		caps = "MMC_CAP_4_BIT_DATA",
 			 "MMC_CAP_MMC_HIGHSPEED",
@@ -1362,7 +1356,7 @@
 };
 
 &sd_emmc_a {
-	status = "disabled";
+	status = "okay";
 	sdio {
 		caps = "MMC_CAP_4_BIT_DATA",
 			 "MMC_CAP_MMC_HIGHSPEED",
@@ -1453,4 +1447,3 @@
 &defendkey {
 	status = "okay";
 };
-

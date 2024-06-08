@@ -1,5 +1,7 @@
 menu "Device Drivers"
 
+source "drivers/mt7668s/wifi/Kconfig"
+
 source "drivers/amlogic/Kconfig"
 
 source "drivers/amba/Kconfig"

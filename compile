@@ -1,0 +1,124 @@
+#!/bin/bash
+
+export MKERNEL_VERSION=4.9.269
+
+export MUINITRD=./ioyhp/uInitrd-xxx
+export MKERNEL_BUILD_OUTPUT_PATH=./ioyhp/OUT
+export MKERNEL_FINAL_OUTPUT_PATH=./ioyhp/OUTPUT
+
+export PATH="./linaro-gcc/bin:${PATH}"
+
+export ARCH=arm64
+export SUBARCH=arm64
+export TARGET_ARCH=arm64
+
+export CROSS_COMPILE=aarch64-linux-gnu-
+export CC="${CROSS_COMPILE}gcc"
+export LD="${CROSS_COMPILE}ld.bfd"
+export MAKE_SET_STRING="O=${MKERNEL_BUILD_OUTPUT_PATH} \
+	ARCH=${ARCH} \
+	EXTRA_CFLAGS="-w" \
+	EXTRA_CFLAGS="-Wno-error" \
+	CROSS_COMPILE=${CROSS_COMPILE} \
+	CC=${CC} LD=${LD} V=0"
+
+#Pembatas
+MHIJAU='\033[1;32m' 
+MKUNING='\033[1;33m' 
+MNORMAL='\033[0m'
+MMERAH='\033[31m'
+
+#Pembatas
+persiapan() {
+	rm -rf ${MKERNEL_FINAL_OUTPUT_PATH}
+	wait
+	mkdir -p ${MKERNEL_FINAL_OUTPUT_PATH}
+
+	echo -e "\n${MHIJAU}[🌿] ARCH: [ ${ARCH} ]"
+	echo -e "[🌿] CROSS_COMPILE: [ ${CROSS_COMPILE} ]"
+    echo -e "[🌿] CC: [ ${CC} ]"
+    echo -e "[🌿] LD: [ ${LD} ]${MNORMAL}\n"
+	sleep 1
+}
+
+compileKernel() {
+#	make ${MAKE_SET_STRING} mrproper
+	make ${MAKE_SET_STRING} meson64_defconfig
+	make ${MAKE_SET_STRING} dtbs
+#	make ${MAKE_SET_STRING} menuconfig
+	make ${MAKE_SET_STRING} -j4
+}
+
+moduleHeadersInstall() {
+	make ${MAKE_SET_STRING} INSTALL_MOD_PATH=${MKERNEL_FINAL_OUTPUT_PATH} modules_install
+	make ${MAKE_SET_STRING} INSTALL_HDR_PATH=${MKERNEL_FINAL_OUTPUT_PATH} headers_install
+}
+
+persiapanKompresi() {
+	mv -f ${MKERNEL_BUILD_OUTPUT_PATH}/${MKERNEL_FINAL_OUTPUT_PATH}/lib/modules/${MKERNEL_VERSION} ${MKERNEL_FINAL_OUTPUT_PATH}
+	#rm -rf ${MKERNEL_FINAL_OUTPUT_PATH}/lib
+	mv -f ${MKERNEL_BUILD_OUTPUT_PATH}/${MKERNEL_FINAL_OUTPUT_PATH}/include ${MKERNEL_FINAL_OUTPUT_PATH}
+	cp -rf ${MKERNEL_BUILD_OUTPUT_PATH}/arch/arm64/boot/Image ${MKERNEL_FINAL_OUTPUT_PATH}/vmlinuz-${MKERNEL_VERSION}
+	cp -rf ${MKERNEL_BUILD_OUTPUT_PATH}/arch/arm64/boot/dts/amlogic/*.dtb ${MKERNEL_FINAL_OUTPUT_PATH}/
+	cp -rf ${MUINITRD} ${MKERNEL_FINAL_OUTPUT_PATH}/uInitrd-${MKERNEL_VERSION}
+}
+
+kompresiKernel() {
+	cd ${MKERNEL_FINAL_OUTPUT_PATH}
+
+	tar -czf modules-${MKERNEL_VERSION}.tar.gz ${MKERNEL_VERSION}
+	tar -czf boot-${MKERNEL_VERSION}.tar.gz uInitrd-${MKERNEL_VERSION} vmlinuz-${MKERNEL_VERSION}
+	tar -czf dtb-amlogic-${MKERNEL_VERSION}.tar.gz *.dtb
+	tar -czf header-${MKERNEL_VERSION}.tar.gz include
+
+	cd ../../
+}
+
+# persiapanUlo() {
+# 	cd ${MKERNEL_FINAL_OUTPUT_PATH}
+
+# 	rm -rf ${MULO_PATH}/core/kernel/bak/
+# 	mv ${MULO_PATH}/core/kernel/${MKERNEL_VERSION} ${MULO_PATH}/core/kernel/bak/
+# 	wait
+# 	mkdir ${MULO_PATH}/core/kernel/${MKERNEL_VERSION}
+# 	cp -r *.tar.gz ${MULO_PATH}/core/kernel/${MKERNEL_VERSION}/
+# }
+
+# kompilasiUlo() {
+# 	cd ${MULO_PATH}
+# 	sudo ./ulo -k ${MKERNEL_VERSION} -m s905x2 -s 1024
+# }
+
+progressBar() {
+	PID=$!
+	i=1
+	sp="\|/-"
+	echo -ne "  ${MKUNING}Silakan tunggu${MNORMAL}  "
+	while [ -d /proc/$PID ]
+	do
+		printf "\b${sp:i++%${#sp} :1}"
+	done
+	echo -e " ${MHIJAU}: Selesai${MNORMAL}"
+	sleep 2
+}
+
+# Pembatas
+clear
+wait && echo -e "\n${MHIJAU}[🌿] Persiapan${MNORMAL}"
+persiapan & sleep 1 && progressBar
+
+wait && echo -e "\n${MHIJAU}[🌿] Mengkompilasi kernel${MNORMAL}"
+compileKernel
+moduleHeadersInstall 
+
+wait && echo -e "\n${MHIJAU}[🌿] Persiapan kompresi kernel${MNORMAL}"
+persiapanKompresi & progressBar
+
+wait && echo -e "\n${MHIJAU}[🌿] Mengkompresi kernel${MNORMAL}"
+kompresiKernel & progressBar
+
+#wait && echo -e "\n${MHIJAU}[🌿] Persiapan kompilasi openwrt menggunakan ulo builder${MNORMAL}"
+#persiapanUlo & progressBar
+
+#wait && echo -e "\n${MMERAH}[🌿] Memulai ulo builder menggunakan sudo ${MNORMAL}"
+#kompilasiUlo
