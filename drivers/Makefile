@@ -7,6 +7,8 @@
 
 obj-y				+= irqchip/
 obj-y				+= bus/
+obj-y 				+= mt7668s/bluetooth/
+obj-y				+= mt7668s/wifi/
 
 obj-$(CONFIG_GENERIC_PHY)	+= phy/
 
