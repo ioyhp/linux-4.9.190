@@ -45,11 +45,12 @@ jobs:
         run: |
           mkdir -p ./artifact
           cp -rf ./ioyhp/OUTPUT/*tar.gz ./artifact/
+          echo "FINISH_TIME=$(date +%Y%m%d%H%M%S)" >> $GITHUB_ENV
           
       - name: Delivering Package
         uses: actions/upload-artifact@v2
         with:
-          name: linux-4.9.269
+          name: linux-4.9.269-${{ env.FINISH_TIME }}
           path: ./artifact/*
   
       - name: Upload Release Asset
@@ -57,7 +58,7 @@ jobs:
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: ./artifact/*
-          tag: ${{ github.ref }}
+          tag: ${{ github.ref }}-${{ env.FINISH_TIME }}
           file_glob: true
           body: |
             ## Linux Amlogic 4.9.269
