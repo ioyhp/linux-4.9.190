@@ -52,13 +52,13 @@ jobs:
           name: linux-4.9.269
           path: ./artifact/*
   
-      # - name: Upload Release Asset
-      #   uses: svenstaro/upload-release-action@v2
-      #   with:
-      #     repo_token: ${{ secrets.GITHUB_TOKEN }}
-      #     file: ./artifact/*
-      #     tag: ${{ github.ref }}
-      #     file_glob: true
-      #     body: |
-      #       ## Linux Amlogic 4.9.269
+      - name: Upload Release Asset
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./artifact/*
+          tag: ${{ github.ref }}
+          file_glob: true
+          body: |
+            ## Linux Amlogic 4.9.269
 
