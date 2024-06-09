@@ -53,6 +53,7 @@
 		ranges;
 		/* global autoconfigured region for contiguous allocations */
 		secmon_reserved:linux,secmon {
+			status = "disabled";
 			compatible = "shared-dma-pool";
 			reusable;
 			size = <0x0 0x400000>;
@@ -150,8 +151,6 @@
 			label="sys_red";
 			gpios=<&gpio GPIOX_6 GPIO_ACTIVE_LOW>;
 			default-state ="on";
-			retain-state-suspended;
-			linux,default-trigger="cpu0";
 		};
 
         	sys_green {
