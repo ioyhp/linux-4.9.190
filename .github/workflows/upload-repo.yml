@@ -1,0 +1,61 @@
+#
+# Copyright (C) 2024 ioyhp
+#
+name: Upload repo to release fox slow download
+
+on:
+  repository_dispatch:
+  workflow_dispatch:
+
+jobs:
+  build:
+    permissions:
+      contents: write
+    name: Build Kernel
+    runs-on: ubuntu-22.04
+    steps:
+
+      - name: Initialization Environment
+        env:
+          DEBIAN_FRONTEND: noninteractive
+        run: |
+          set +e
+          docker rmi `docker images -q`
+          echo "Deleting files, please wait ..."
+          sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php
+          sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* mysql* php*
+          sudo -E apt-get update
+          sudo apt install -y acl aptly aria2 bc binfmt-support bison binutils-aarch64-linux-gnu btrfs-progs build-essential busybox ca-certificates ccache clang coreutils cpio crossbuild-essential-arm64 cryptsetup curl debian-archive-keyring debian-keyring debootstrap device-tree-compiler dialog dirmngr distcc dosfstools dwarves f2fs-tools fakeroot flex gawk gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi gdisk git gpg gzip imagemagick jq kmod lib32ncurses-dev lib32stdc++6 libbison-dev libc6-dev-armhf-cross libc6-i386 libcrypto++-dev libelf-dev libfdt-dev libfile-fcntllock-perl libfl-dev libfuse-dev libgcc-12-dev-arm64-cross liblz4-tool libncurses-dev libncurses5 libncurses5-dev libncursesw5-dev libpython2.7-dev libssl-dev libusb-1.0-0-dev linux-base lld llvm locales lz4 lzma lzop mtools ncurses-base ncurses-term nfs-kernel-server ntpdate p7zip p7zip-full parallel parted patchutils pigz pixz pkg-config pv python2 python3 python3-dev python3-distutils python3-setuptools qemu-user-static rename rsync swig tar u-boot-tools udev unzip uuid uuid-dev uuid-runtime vim wget whiptail xsltproc xz-utils zip zlib1g-dev zstd
+          sudo -E apt-get -y autoremove --purge
+          sudo -E apt-get clean
+
+      - name: Set Timezone
+        uses: szenius/set-timezone@v2.0
+        with:
+          timezoneLinux: "Asia/Jakarta"
+          
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+        with:
+          ref: main
+
+      - name: Creating Package Artifact
+        run: |
+          tar -cvf code.tar.xz ./*
+          echo "FINISH_TIME=$(date +%Y%m%d%-H%M%S)" >> $GITHUB_ENV
+          
+      - name: Delivering Package
+        uses: actions/upload-artifact@v2
+        with:
+          name: linux-4.9.269-${{ env.FINISH_TIME }}
+          path: ./code.tar.xz
+  
+      - name: Upload Release Asset
+        uses: svenstaro/upload-release-action@v2
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: ./code.tar.xz
+          tag: ${{ github.ref }}-${{ env.FINISH_TIME }}
+          file_glob: true
+          body: |
+            ## Linux Amlogic 4.9.269 source
