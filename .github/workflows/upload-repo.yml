@@ -25,6 +25,7 @@ jobs:
           sudo rm -rf /usr/share/dotnet /etc/mysql /etc/php
           sudo -E apt-get -y purge azure-cli ghc* zulu* hhvm llvm* firefox google* dotnet* powershell openjdk* mysql* php*
           sudo -E apt-get update
+          sudo -E apt-get install git
           sudo -E apt-get -y autoremove --purge
           sudo -E apt-get clean
 
@@ -32,15 +33,12 @@ jobs:
         uses: szenius/set-timezone@v2.0
         with:
           timezoneLinux: "Asia/Jakarta"
-          
-      - name: Checkout Repository
-        uses: actions/checkout@v2
-        with:
-          ref: main
 
       - name: Creating Package Artifact
         run: |
-          tar -cvf code.tar.xz ./*
+          git clone https://github.com/ioyhp/linux-4.9.269.git --single-branch --depth 1 -b main linux-4.9.269
+          rm -rf ./linux-4.9.269/.git
+          tar -cvf code.tar.xz ./linux-4.9.269/*
           echo "FINISH_TIME=$(date +%Y%m%d%-H%M%S)" >> $GITHUB_ENV
           
       - name: Delivering Package
