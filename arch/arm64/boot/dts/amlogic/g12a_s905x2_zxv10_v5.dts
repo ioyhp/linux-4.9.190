@@ -149,13 +149,13 @@
 
 		sys_red {
 			label="sys_red";
-			gpios=<&gpio GPIOX_6 GPIO_ACTIVE_LOW>;
+			gpios=<&gpio GPIOX_6 GPIO_ACTIVE_HIGH>;
 			default-state ="on";
 		};
 
         	sys_green {
 			label="sys_green";
-			gpios=<&gpio GPIOX_7 GPIO_ACTIVE_LOW>;
+			gpios=<&gpio GPIOX_7 GPIO_ACTIVE_HIGH>;
 		};
 	};
 
